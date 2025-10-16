@@ -81,7 +81,7 @@ const Header: React.FC = () => {
 </NavigationMenu>
 </div>
       <div className="flex w-2/7 items-center justify-start gap-4">
-      <div className="text-1xl font-bold cursor-pointer transition border-b-2 border-transparent hover:text-sky-500 hover:border-sky-500">
+      <div className="text-1xl font-bold cursor-pointer transition border-b-2 border-transparent hover:text-sky-500 hover:border-sky-500 pr-4">
   고객지원
 </div>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6 cursor-pointer transition hover:text-sky-500">
