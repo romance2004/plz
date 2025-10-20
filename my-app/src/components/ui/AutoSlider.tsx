@@ -4,21 +4,23 @@ import React, { useState, useEffect, useCallback } from 'react';
 import useEmblaCarousel from 'embla-carousel-react'; 
 import { type EmblaOptionsType, type EmblaCarouselType } from 'embla-carousel'; 
 import Autoplay from 'embla-carousel-autoplay';
+import Image from 'next/image';
 
 type AutoplayOptionsType = Parameters<typeof Autoplay>[0];
 
 
 interface Banner {
   id: number;
-  color: string;
-  text: string;
+  // 텍스트 속성 제거
+  imageUrl: string; 
 }
 
 const banners: Banner[] = [
-  { id: 1, color: 'bg-indigo-500', text: '상호작용 후 자동 재생 재개 (1)' },
-  { id: 2, color: 'bg-teal-500', text: 'settle 로직 복구 (2)' },
-  { id: 3, color: 'bg-amber-500', text: '간결한 코드로 회귀 (3)' },
-  { id: 4, color: 'bg-red-500', text: '이벤트 핸들러 제거 완료 (4)' },
+  // 텍스트 필드 제거, 절대 경로('/') 유지
+  { id: 1, imageUrl: '/image/banner1.webp' },
+  { id: 2, imageUrl: '/image/banner2.webp' },
+  { id: 3, imageUrl: '/image/banner3.webp' },
+  { id: 4, imageUrl: '/image/banner4.webp' },
 ];
 
 export default function AutoSlider() {
@@ -30,10 +32,9 @@ export default function AutoSlider() {
     slidesToScroll: 1,
   };
   
-  // 상호작용 후 자동 재생이 영구적으로 멈추는 것을 방지
   const autoplayOptions: AutoplayOptionsType = {
     delay: 3000,
-    stopOnInteraction: false, // 영구 정지 방지
+    stopOnInteraction: false,
   };
 
   const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions, [Autoplay(autoplayOptions)]);
@@ -49,23 +50,19 @@ export default function AutoSlider() {
       emblaApi.on('select', onSelect);
       onSelect(emblaApi);
       
-      // 🌟🌟🌟 settle 이벤트 로직 복구: 상호작용 후 자동 재생 재개 🌟🌟🌟
       const autoplay = emblaApi.plugins().autoplay;
 
       const restartAutoplay = () => {
         if (autoplay) {
-          autoplay.play(); // 스크롤 정착 후 자동 재생 재시작
+          autoplay.play();
         }
       };
 
       emblaApi.on('settle', restartAutoplay);
       emblaApi.on('init', restartAutoplay);
-      // 🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟
       
       return () => {
         emblaApi.off('select', onSelect);
-        
-        // 클린업 시 settle 리스너 제거
         emblaApi.off('settle', restartAutoplay);
         emblaApi.off('init', restartAutoplay);
       };
@@ -74,9 +71,11 @@ export default function AutoSlider() {
 
 
   return (
-    <div className="relative overflow-hidden w-full max-w-full mx-auto shadow-2xl mt-8 h-96">
+    // 배너 슬라이더의 전체 컨테이너
+    <div className="relative overflow-hidden w-full max-w-full mx-auto h-96 bg-gray-50">
 
-      <div className="embla-viewport h-full" ref={emblaRef}> 
+      {/* Embla Viewport */}
+      <div className="embla-viewport h-full bg-gray-50" ref={emblaRef}> 
 
         <div className="embla-container flex h-full">
 
@@ -84,17 +83,27 @@ export default function AutoSlider() {
             
             <div 
               key={banner.id}
-              // 높이(h-96=384px) 기준 16:9 비율을 만족하는 고정 너비 (682.66px) 적용
               className="flex-shrink-0 flex-grow-0 min-w-0 mr-[10%] w-[682.66px] h-full" 
             >
               <div
-                className={`w-full h-full flex items-center justify-center 
-                  transition-opacity duration-300 
+                // 이미지가 로드되지 않을 때 대비하여 bg-gray-200을 fallback으로 유지
+                className={`relative w-full h-full flex items-center justify-center rounded-xl 
+                  transition-opacity duration-300 shadow-lg bg-gray-200 
                   ${selectedIndex === index ? 'opacity-100' : 'opacity-50'}
-                  text-white text-xl font-semibold ${banner.color}
-                  cursor-grab active:cursor-grabbing`}
+                  cursor-grab active:cursor-grabbing
+                `}
               >
-                {banner.text}
+                {/* next/image 컴포넌트를 사용하여 이미지 렌더링 (이미지만) */}
+                <Image
+                  src={banner.imageUrl}
+                  alt={`Banner Image ${banner.id}`} // 최소한의 alt 텍스트 유지 (접근성)
+                  fill 
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" 
+                  className="object-cover rounded-xl"
+                  priority={index === 0}
+                  // 이미지 로딩 실패 시 로그 출력 코드는 유지 (디버깅 편의성)
+                  onError={(e) => console.error(`Image failed to load: ${banner.imageUrl}`, e)}
+                />
               </div>
             </div>
           ))}
